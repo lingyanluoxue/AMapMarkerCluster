@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2015 Baidu, Inc. All Rights Reserved.
- */
-
 package com.lylx.amapmarkercluster.clusterutil.clustering.algo;
 
 import android.support.v4.util.LruCache;

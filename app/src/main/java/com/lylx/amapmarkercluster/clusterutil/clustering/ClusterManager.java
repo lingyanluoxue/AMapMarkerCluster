@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2015 Baidu, Inc. All Rights Reserved.
- */
 
 package com.lylx.amapmarkercluster.clusterutil.clustering;
 
@@ -271,5 +268,12 @@ public class ClusterManager<T extends ClusterItem> implements
      */
     public interface OnClusterItemInfoWindowClickListener<T extends ClusterItem> {
         public void onClusterItemInfoWindowClick(T item);
+    }
+
+    /**
+     * get DefaultClusterRenderer
+     */
+    public DefaultClusterRenderer<T> getDefaultClusterRenderer() {
+        return (DefaultClusterRenderer) mRenderer;
     }
 }

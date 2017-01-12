@@ -20,7 +20,9 @@ import com.lylx.amapmarkercluster.clusterutil.clustering.ClusterManager;
 import com.lylx.amapmarkercluster.model.MarkerInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
     private ClusterManager<MarkerItem> mClusterManager;
 
     private List<MarkerInfo> markerDataList = new ArrayList<>();
+
+    //地图热点和热点列表同时存在的情况下和列表联动的MarkerItemMap
+    private Map<Integer,MarkerItem> mMarkerItemMap = new HashMap<>();
+    private int mLastClickPosition=-1;
 
 
     @Override
@@ -89,13 +95,50 @@ public class MainActivity extends AppCompatActivity {
             public boolean onClusterItemClick(MarkerItem item) {
 //                Toast.makeText(MainActivity.this,
 //                        "点击单个Item", Toast.LENGTH_SHORT).show();
-
+                for (Integer getKey : mMarkerItemMap.keySet()) {
+                    if (mMarkerItemMap.get(getKey).equals(item)) {
+                        setClickMarkIcon(item, getKey);
+                        mLastClickPosition = getKey;
+                        break;
+                    }
+                }
                 return false;
             }
         });
         // 添加Marker点
 //        addMarkers();
         initData();
+    }
+
+    private void setClickMarkIcon(MarkerItem markerItem, int clickPosition) {
+        Marker marker = mClusterManager.getDefaultClusterRenderer().getMarker(markerItem);
+        String clickIconPath = "http://60.205.146.135:8080/nav/upload/file/fcfa1c12-7576-40b6-94e0-b496d284ab44.png";
+        try {
+            marker.setIcon(BitmapDescriptorFactory.fromBitmap(Ion.with(this)
+                    .load(clickIconPath).asBitmap().get()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        if (mLastClickPosition != -1 && mLastClickPosition != clickPosition) {
+            setLastMarkIcon();
+        }
+    }
+
+    private void setLastMarkIcon() {
+        Marker lastClickMarker = mClusterManager.getDefaultClusterRenderer().getMarker( mMarkerItemMap.get(mLastClickPosition));
+
+        String iconPath = "http://60.205.146.135:8080/nav/upload/file/67a3e200-0d56-4176-b705-d952df4d60c8.png";
+
+        try {
+            lastClickMarker.setIcon(BitmapDescriptorFactory.fromBitmap(Ion.with(this)
+                    .load(iconPath).asBitmap().get()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -105,26 +148,26 @@ public class MainActivity extends AppCompatActivity {
     private void initData() {
         markerDataList.addAll(MarkerInfo.initData());
         List<MarkerItem> markerItemLists = markerItemLogic(markerDataList);
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (MarkerItem markerItem : markerItemLists){
-            builder.include(markerItem.getPosition());
-        }
-        aMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),100));
         mClusterManager.addItems(markerItemLists);
     }
 
     /**
-     * 组装百度需要的item
+     * 组装高德需要的item
      */
     private List<MarkerItem> markerItemLogic(List<MarkerInfo> list) {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         List<MarkerItem> items = new ArrayList<>();
-        for (MarkerInfo markerInfo : list) {
+        for (int i=0;i<list.size();i++) {
+            MarkerInfo markerInfo = list.get(i);
             LatLng latLng = new LatLng(markerInfo.getMarkerLat(), markerInfo.getMarkerLon());
             MarkerItem markerItem = new MarkerItem(latLng);
-            markerItem.setMarkerUrl(markerInfo.getMarkerIcon());
+            markerItem.setMarkerIconUrl(markerInfo.getMarkerIcon());
             markerItem.setTitle(markerInfo.getMarkerName());
             items.add(markerItem);
+            mMarkerItemMap.put(i,markerItem);
+            builder.include(markerItem.getPosition());
         }
+        aMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(),100));
         return items;
     }
 
@@ -172,7 +215,9 @@ public class MainActivity extends AppCompatActivity {
         items.add(new MarkerItem(latLng16));
         items.add(new MarkerItem(latLng17));
         items.add(new MarkerItem(latLng18));
-        items.add(new MarkerItem(latLng19));
+        MarkerItem markerItem19 = new MarkerItem(latLng19);
+        markerItem19.setMarkerIconDefault(BitmapDescriptorFactory.HUE_GREEN);
+        items.add(markerItem19);
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (MarkerItem markerItem:items){
@@ -236,11 +281,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 每个Marker点，包含Marker点坐标以及图标
+     * 每个Marker点，包含Marker点坐标以及图标,infowindow数据
      */
     public class MarkerItem implements ClusterItem {
         private final LatLng mPosition;
-        private String markerUrl;
+        private String markerIconUrl;
+        private int markerIconResource=-1;
+        private float markerIconDefault=0.0F;
         private String title;
         private String snippet;
 
@@ -248,17 +295,18 @@ public class MainActivity extends AppCompatActivity {
             mPosition = latLng;
         }
 
-        public LatLng getmPosition() {
-            return mPosition;
+        public void setMarkerIconUrl(String markerIconUrl) {
+            this.markerIconUrl = markerIconUrl;
         }
 
-        public String getMarkerUrl() {
-            return markerUrl;
+        public void setMarkerIconResource(int markerIconResource) {
+            this.markerIconResource = markerIconResource;
         }
 
-        public void setMarkerUrl(String markerUrl) {
-            this.markerUrl = markerUrl;
+        public void setMarkerIconDefault(float markerIconDefault) {
+            this.markerIconDefault = markerIconDefault;
         }
+
 
         public void setTitle(String title) {
             this.title = title;
@@ -275,19 +323,21 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public BitmapDescriptor getBitmapDescriptor() {
-//            return BitmapDescriptorFactory
-//                    .fromResource(R.mipmap.icon_gcoding);
-//           return BitmapDescriptorFactory
-//                                .defaultMarker(BitmapDescriptorFactory.HUE_RED);
-            try {
-                return BitmapDescriptorFactory.fromBitmap(Ion.with(MainActivity.this)
-                        .load(markerUrl).asBitmap().get());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+            if (markerIconUrl != null) {
+                try {
+                    return BitmapDescriptorFactory.fromBitmap(Ion.with(MainActivity.this)
+                            .load(markerIconUrl).asBitmap().get());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            } else if (markerIconResource != -1) {
+                return BitmapDescriptorFactory
+                        .fromResource(markerIconResource);
             }
-            return null;
+            return BitmapDescriptorFactory
+                    .defaultMarker(markerIconDefault);
         }
 
         @Override

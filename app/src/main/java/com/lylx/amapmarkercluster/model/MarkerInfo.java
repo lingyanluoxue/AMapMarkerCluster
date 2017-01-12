@@ -59,7 +59,7 @@ public class MarkerInfo {
      * @return
      */
     public static List<MarkerInfo> initData() {
-        String iconPath = "http://60.205.146.135:8080/nav/upload/file/fcfa1c12-7576-40b6-94e0-b496d284ab44.png";
+        String iconPath = "http://60.205.146.135:8080/nav/upload/file/67a3e200-0d56-4176-b705-d952df4d60c8.png";
         List<MarkerInfo> markerInfoList = new ArrayList<>();
 
         MarkerInfo markerInfo1 = new MarkerInfo();

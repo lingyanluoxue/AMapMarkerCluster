@@ -1,6 +1,4 @@
-/*
- * Copyright (C) 2015 Baidu, Inc. All Rights Reserved.
- */
+
 
 package com.lylx.amapmarkercluster.clusterutil.ui;
 
