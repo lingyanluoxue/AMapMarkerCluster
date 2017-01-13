@@ -2,6 +2,7 @@ package com.lylx.amapmarkercluster;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -234,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
         if (aMap == null) {
             return;
         }
+        Log.d("tag","position:"+markerItemCluster.getPosition());
         if (markerItemCluster.getItems().size() > 0) {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (MarkerItem markerItem : markerItemCluster.getItems()) {

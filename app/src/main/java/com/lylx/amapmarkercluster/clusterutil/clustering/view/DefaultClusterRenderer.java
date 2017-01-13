@@ -87,8 +87,9 @@ public class DefaultClusterRenderer<T extends ClusterItem> implements
 
     /**
      * If cluster size is less than this size, display individual markers.
+     * 最小聚合个数
      */
-    private static final int MIN_CLUSTER_SIZE = 4;
+    private static final int MIN_CLUSTER_SIZE = 1;
 
     /**
      * The currently displayed set of clusters.
