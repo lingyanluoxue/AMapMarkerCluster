@@ -2,13 +2,13 @@
 高德地图Marker聚合、聚合Marker和单个Marker点击设置
 
 ```
-        // 定义点聚合管理类ClusterManager
-        mClusterManager = new ClusterManager<MarkerItem>(this, aMap);
-        // 设置地图监听，当地图状态发生改变时，进行点聚合运算
-        aMap.setOnCameraChangeListener(mClusterManager);
-        // 设置maker点击时的响应
-        aMap.setOnMarkerClickListener(mClusterManager);
- ```
+// 定义点聚合管理类ClusterManager
+ mClusterManager = new ClusterManager<MarkerItem>(this, aMap);
+// 设置地图监听，当地图状态发生改变时，进行点聚合运算
+ aMap.setOnCameraChangeListener(mClusterManager);
+// 设置maker点击时的响应
+ aMap.setOnMarkerClickListener(mClusterManager);
+```
 
 ```
 //Cluster Marker 点击监听
